@@ -486,7 +486,7 @@
 			var tokens = hidden_input.val().split(",");
 			for (i=0; i< tokens.length; i++) {
 				if (tokens[i] == token_data.id) {
-					tokens[i]="";
+					tokens.splice(i, 1);
 				}
 			}
 			//var to_delete = tokens.indexOf(token_data.id);
