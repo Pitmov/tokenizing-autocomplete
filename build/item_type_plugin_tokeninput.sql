@@ -101,6 +101,7 @@ wwv_flow_api.create_plugin (
 'L.DESC_TAB;'||unistr('\000a')||
 '  L_SQL VARCHAR2(32000);'||unistr('\000a')||
 '  L_NAME VARCHAR2 ( 30 );'||unistr('\000a')||
+'  L_LOV  VARCHAR2 ( 32000 ) := P_ITEM.LOV_DEFINITION; '||unistr('\000a')||
 'BEGIN'||unistr('\000a')||
 '  --'||unistr('\000a')||
 '  APEX_JAVASCRIPT.ADD_LIBRARY ( '||unistr('\000a')||
@@ -113,43 +114,46 @@ wwv_flow_api.create_plugin (
 '   P_DIRECTORY => P_PLUGIN.FILE_PREFIX, '||unistr('\000a')||
 '   P_VERSION => NULL ) ;'||unistr('\000a')||
 '  --'||unistr('\000a')||
-'  L_NAME := APEX_PLUGIN.GET_INPUT_NAME_FOR_PAGE_ITEM ( '||
-'FALSE ) ;'||unistr('\000a')||
+''||
+'  L_NAME := APEX_PLUGIN.GET_INPUT_NAME_FOR_PAGE_ITEM ( FALSE ) ;'||unistr('\000a')||
 '  HTP.P ( ''<input '' || ''name="'' || L_NAME ||''" id="'' || P_ITEM.NAME ||''" type="text" maxlength="4000" size="30" value="''||P_VALUE||''" class="text_field" />'' ) ;'||unistr('\000a')||
 '  --'||unistr('\000a')||
 '  L_CURSOR := DBMS_SQL.OPEN_CURSOR;'||unistr('\000a')||
 '  --'||unistr('\000a')||
 '  DBMS_SQL.PARSE ( L_CURSOR, P_ITEM.LOV_DEFINITION, DBMS_SQL.NATIVE ) ;'||unistr('\000a')||
-'  DBMS_SQL.DESCRIBE_COLUMNS ( L_CURSOR, L_COL_CNT, REC_TAB ) ;'||unistr('\000a')||
+'  DBMS_SQL.DESCRIBE_COLUMNS ( L_CURSOR, L_COL_CNT, REC_T'||
+'AB ) ;'||unistr('\000a')||
 '  --'||unistr('\000a')||
 '  DBMS_SQL.CLOSE_CURSOR ( L_CURSOR ) ;'||unistr('\000a')||
-'  --'||
-''||unistr('\000a')||
+'  --'||unistr('\000a')||
 '  L_SQL := ''SELECT '' || REC_TAB ( 1 ).COL_NAME || '' AS "name", '';'||unistr('\000a')||
 '  L_SQL := L_SQL || REC_TAB ( 2 ).COL_NAME || '' AS "id" '';'||unistr('\000a')||
-'  L_SQL := L_SQL || ''FROM ( '' || P_ITEM.LOV_DEFINITION || '' ) '';'||unistr('\000a')||
+'  IF TRIM (P_ITEM.ATTRIBUTE_08) IS NOT NULL THEN'||unistr('\000a')||
+'    L_LOV := REGEXP_REPLACE (P_ITEM.LOV_DEFINITION, REGEXP_REPLACE (TRIM (P_ITEM.ATTRIBUTE_08), ''(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE)'', ''?'', 1, 0, ''i''), SYS.HT'||
+'F.ESCAPE_SC ( WWV_FLOW.G_X01 ), 1, 1, ''i'');'||unistr('\000a')||
+'  END IF;'||unistr('\000a')||
+'  L_SQL := L_SQL || ''FROM ( '' || L_LOV || '' ) ''; '||unistr('\000a')||
 '  L_SQL := L_SQL || ''WHERE INSTR( '''','''' || '''''' || SYS.HTF.ESCAPE_SC ( P_VALUE ) || '''''' || '''','''', '''','''' || "'' || REC_TAB ( 2 ).COL_NAME || ''" || '''','''', 1 ) > 0'';'||unistr('\000a')||
-'  --'||unistr('\000a')||
-'  HTP.P ( ''<script> '' || P_ITEM.NAME ||''_da'||
-'ta ='' );'||unistr('\000a')||
+'  HTP.P ( ''<script> '' || P_ITEM.NAME ||''_data ='' );'||unistr('\000a')||
 '  APEX_UTIL.JSON_FROM_SQL ( L_SQL ) ;'||unistr('\000a')||
 '  HTP.P ( '';'' );'||unistr('\000a')||
 '  HTP.P ( ''</script>'' ) ;'||unistr('\000a')||
-'  --'||unistr('\000a')||
+'  '||
+'--'||unistr('\000a')||
 '  APEX_JAVASCRIPT.ADD_ONLOAD_CODE ( ''$( "#'' || P_ITEM.NAME || ''").tokenInput( "wwv_flow.show",{'||unistr('\000a')||
 '  hintText: "''      || P_ITEM.ATTRIBUTE_02 || ''",'||unistr('\000a')||
 '  noResultsText: "'' || P_ITEM.ATTRIBUTE_03 || ''",'||unistr('\000a')||
 '  searchingText: "'' || P_ITEM.ATTRIBUTE_04 || ''",'||unistr('\000a')||
 '  pluginId: "'' ||apex_plugin.get_ajax_identifier || ''",'||unistr('\000a')||
-'  a'||
-'llowNewValues: ''|| CASE WHEN UPPER( P_ITEM.ATTRIBUTE_05 ) LIKE ''T%'' THEN ''true'' ELSE ''false'' END || '','||unistr('\000a')||
+'  allowNewValues: ''|| CASE WHEN UPPER( P_ITEM.ATTRIBUTE_05 ) LIKE ''T%'' THEN ''true'' ELSE ''false'''||
+' END || '','||unistr('\000a')||
 '  canCreate: ''     || CASE WHEN UPPER( P_ITEM.ATTRIBUTE_05 ) LIKE ''T%'' THEN ''true'' ELSE ''false'' END || '','||unistr('\000a')||
 '  createText: "''    || P_ITEM.ATTRIBUTE_06 || ''",'||unistr('\000a')||
 '  createIdentifier: "[NEW]",'||unistr('\000a')||
 '  jsonContainer: "row",'||unistr('\000a')||
 '  initialValues: '' || P_ITEM.NAME || ''_data.row,'||unistr('\000a')||
-'  queryParam: "p_flow_id='' || V ( ''APP_'||
-'ID'' ) || ''&p_flow_step_id='' || V ( ''APP_PAGE_ID'' ) || ''&p_instance='' || V ( ''APP_SESSION'' ) || ''&p_request=PLUGIN='' || APEX_PLUGIN.GET_AJAX_IDENTIFIER || ''&x01" } );'' );'||unistr('\000a')||
+'  queryParam: "p_flow_id='' || V ( ''APP_ID'' ) || ''&p_flow_step_id='' || V ( ''APP_PAGE_ID'' ) || ''&p_instance='' || V ( ''APP_SESSION'' ) '||
+'|| ''&p_request=PLUGIN='' || APEX_PLUGIN.GET_AJAX_IDENTIFIER || ''&x01" } );'' );'||unistr('\000a')||
 '  --'||unistr('\000a')||
 '  RETURN L_RETURN;'||unistr('\000a')||
 '  --'||unistr('\000a')||
@@ -160,12 +164,13 @@ wwv_flow_api.create_plugin (
 '    P_PLUGIN IN APEX_PLUGIN.T_PLUGIN )'||unistr('\000a')||
 '  RETURN APEX_PLUGIN.T_PAGE_ITEM_AJAX_RESULT'||unistr('\000a')||
 'IS'||unistr('\000a')||
-'  L_RETURN APEX_PLUGIN.T_PAGE_ITEM_AJAX_RESU'||
-'LT;'||unistr('\000a')||
+'  L_RETURN APEX_PLUGIN.T_PAGE_ITEM_AJAX_RESULT;'||unistr('\000a')||
 '  L_CURSOR  INTEGER;'||unistr('\000a')||
 '  L_COL_CNT PLS_INTEGER;'||unistr('\000a')||
 '  L_REC_TAB DBMS_SQL.DESC_TAB;'||unistr('\000a')||
-'  L_SQL     VARCHAR2 ( 32000 ) ;'||unistr('\000a')||
+'  L_SQL    '||
+' VARCHAR2 ( 32000 ) ;'||unistr('\000a')||
+'  L_LOV  VARCHAR2 ( 32000 ) := P_ITEM.LOV_DEFINITION;'||unistr('\000a')||
 'BEGIN'||unistr('\000a')||
 '  --'||unistr('\000a')||
 '  L_CURSOR := DBMS_SQL.OPEN_CURSOR;'||unistr('\000a')||
@@ -175,21 +180,25 @@ wwv_flow_api.create_plugin (
 '  --'||unistr('\000a')||
 '  DBMS_SQL.CLOSE_CURSOR ( L_CURSOR ) ;'||unistr('\000a')||
 '  --'||unistr('\000a')||
-'  L_SQL := ''SELECT '' || L_REC_TAB( 2 ).COL_NAME '||
-'|| '' AS "id", '';'||unistr('\000a')||
-'  L_SQL := L_SQL || L_REC_TAB( 1 ).COL_NAME || '' AS "name" '';'||unistr('\000a')||
-'  L_SQL := L_SQL || ''FROM ( '' || P_ITEM.LOV_DEFINITION || '' ) '';'||unistr('\000a')||
+'  L_SQL := ''SELECT '' || L_REC_TAB( 2 ).COL_NAME || '' AS "id", '';'||unistr('\000a')||
+'  L_SQL := L_SQL || L'||
+'_REC_TAB( 1 ).COL_NAME || '' AS "name" '';'||unistr('\000a')||
+'  IF TRIM (P_ITEM.ATTRIBUTE_08) IS NOT NULL THEN'||unistr('\000a')||
+'    L_LOV := REGEXP_REPLACE (P_ITEM.LOV_DEFINITION, REGEXP_REPLACE (TRIM (P_ITEM.ATTRIBUTE_08), ''(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE)'', ''?'', 1, 0, ''i''), SYS.HTF.ESCAPE_SC ( WWV_FLOW.G_X01 ), 1, 1, ''i'');'||unistr('\000a')||
+'  END IF;'||unistr('\000a')||
+'  L_SQL := L_SQL || ''FROM ( '' || L_LOV || '' ) ''; '||unistr('\000a')||
 '  --'||unistr('\000a')||
-'  IF UPPER( NVL( P_ITEM.ATTRIBUTE_01, ''F'' ) ) LIKE ''F%'' THEN    '||unistr('\000a')||
+'  IF UPPER( NVL( P_ITEM.ATTRIBU'||
+'TE_01, ''F'' ) ) LIKE ''F%'' THEN    '||unistr('\000a')||
 '    L_SQL := L_SQL || ''WHERE UPPER('' || L_REC_TAB( 1 ).COL_NAME || '' ) '';'||unistr('\000a')||
 '    L_SQL := L_SQL || '' LIKE  ''''%'' || UPPER(SYS.HTF.ESCAPE_SC ( WWV_FLOW.G_X01 )) || ''%'''' '';'||unistr('\000a')||
 '  ELSE'||unistr('\000a')||
-'    L_SQL :='||
-' L_SQL || ''WHERE '' || L_REC_TAB( 1 ).COL_NAME;'||unistr('\000a')||
+'    L_SQL := L_SQL || ''WHERE '' || L_REC_TAB( 1 ).COL_NAME;'||unistr('\000a')||
 '    L_SQL := L_SQL || '' LIKE ''''%'' || SYS.HTF.ESCAPE_SC ( WWV_FLOW.G_X01 ) || ''%'''' '';'||unistr('\000a')||
 '  END IF;'||unistr('\000a')||
 '  --'||unistr('\000a')||
-'  IF P_ITEM.ATTRIBUTE_07 IS NOT NULL THEN'||unistr('\000a')||
+'  IF P_ITEM.ATTRIBUTE_07 IS NOT N'||
+'ULL THEN'||unistr('\000a')||
 '    L_SQL := L_SQL || ''AND ROWNUM <= '' || P_ITEM.ATTRIBUTE_07 || '' '' ;'||unistr('\000a')||
 '  END IF;'||unistr('\000a')||
 '  --'||unistr('\000a')||
@@ -199,7 +208,8 @@ wwv_flow_api.create_plugin (
 '  --'||unistr('\000a')||
 '  RETURN L_RETURN;'||unistr('\000a')||
 '  --'||unistr('\000a')||
-'END AJAX;'
+'END AJAX;'||unistr('\000a')||
+''
  ,p_render_function => 'RENDER'
  ,p_ajax_function => 'AJAX'
  ,p_standard_attributes => 'VISIBLE:SESSION_STATE:SOURCE:LOV:LOV_REQUIRED'
@@ -309,6 +319,21 @@ wwv_flow_api.create_plugin_attribute (
  ,p_is_required => false
  ,p_is_translatable => false
  ,p_help_text => 'Enter the maximum number of rows that are returned by the LOV query.'
+  );
+wwv_flow_api.create_plugin_attribute (
+  p_id => 222773407955148803 + wwv_flow_api.g_id_offset
+ ,p_flow_id => wwv_flow.g_flow_id
+ ,p_plugin_id => 2764932807979279221 + wwv_flow_api.g_id_offset
+ ,p_attribute_scope => 'COMPONENT'
+ ,p_attribute_sequence => 8
+ ,p_display_sequence => 80
+ ,p_prompt => 'Filter'
+ ,p_attribute_type => 'TEXT'
+ ,p_is_required => false
+ ,p_default_value => '#FILTER#'
+ ,p_is_translatable => false
+ ,p_help_text => 'Filter, используя который можно применять фильтр не к результату всего запроса, а к его части, например, передавать значение параметра PIPELINED-функции'
+ ,p_attribute_comment => 'Filter, используя который можно применять фильтр не к результату всего запроса, а к его части, например, передавать значение параметра PIPELINED-функции'
   );
 null;
  
