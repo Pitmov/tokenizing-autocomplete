@@ -172,6 +172,7 @@ wwv_flow_api.create_plugin (
 ' VARCHAR2 ( 32000 ) ;'||unistr('\000a')||
 '  L_LOV  VARCHAR2 ( 32000 ) := P_ITEM.LOV_DEFINITION;'||unistr('\000a')||
 'BEGIN'||unistr('\000a')||
+'  WWV_FLOW.G_X01 := REPLACE(WWV_FLOW.G_X01,'''''''',''''''''''''); '||unistr('\000a')||
 '  --'||unistr('\000a')||
 '  L_CURSOR := DBMS_SQL.OPEN_CURSOR;'||unistr('\000a')||
 '  --'||unistr('\000a')||
@@ -180,25 +181,25 @@ wwv_flow_api.create_plugin (
 '  --'||unistr('\000a')||
 '  DBMS_SQL.CLOSE_CURSOR ( L_CURSOR ) ;'||unistr('\000a')||
 '  --'||unistr('\000a')||
-'  L_SQL := ''SELECT '' || L_REC_TAB( 2 ).COL_NAME || '' AS "id", '';'||unistr('\000a')||
-'  L_SQL := L_SQL || L'||
-'_REC_TAB( 1 ).COL_NAME || '' AS "name" '';'||unistr('\000a')||
+'  L_SQL := ''SELECT '' || L_RE'||
+'C_TAB( 2 ).COL_NAME || '' AS "id", '';'||unistr('\000a')||
+'  L_SQL := L_SQL || L_REC_TAB( 1 ).COL_NAME || '' AS "name" '';'||unistr('\000a')||
 '  IF TRIM (P_ITEM.ATTRIBUTE_08) IS NOT NULL THEN'||unistr('\000a')||
 '    L_LOV := REGEXP_REPLACE (P_ITEM.LOV_DEFINITION, REGEXP_REPLACE (TRIM (P_ITEM.ATTRIBUTE_08), ''(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE)'', ''?'', 1, 0, ''i''), SYS.HTF.ESCAPE_SC ( WWV_FLOW.G_X01 ), 1, 1, ''i'');'||unistr('\000a')||
 '  END IF;'||unistr('\000a')||
-'  L_SQL := L_SQL || ''FROM ( '' || L_LOV || '' ) ''; '||unistr('\000a')||
+'  L_SQL := L_SQL || ''FROM ( '||
+''' || L_LOV || '' ) ''; '||unistr('\000a')||
 '  --'||unistr('\000a')||
-'  IF UPPER( NVL( P_ITEM.ATTRIBU'||
-'TE_01, ''F'' ) ) LIKE ''F%'' THEN    '||unistr('\000a')||
+'  IF UPPER( NVL( P_ITEM.ATTRIBUTE_01, ''F'' ) ) LIKE ''F%'' THEN    '||unistr('\000a')||
 '    L_SQL := L_SQL || ''WHERE UPPER('' || L_REC_TAB( 1 ).COL_NAME || '' ) '';'||unistr('\000a')||
 '    L_SQL := L_SQL || '' LIKE  ''''%'' || UPPER(SYS.HTF.ESCAPE_SC ( WWV_FLOW.G_X01 )) || ''%'''' '';'||unistr('\000a')||
 '  ELSE'||unistr('\000a')||
 '    L_SQL := L_SQL || ''WHERE '' || L_REC_TAB( 1 ).COL_NAME;'||unistr('\000a')||
-'    L_SQL := L_SQL || '' LIKE ''''%'' || SYS.HTF.ESCAPE_SC ( WWV_FLOW.G_X01 ) || ''%'''' '';'||unistr('\000a')||
+'    L_SQL := L_SQL || '' LIKE ''''%'' || SYS.HTF.ESCAPE_SC ( WWV_FLOW.G_X01 ) |'||
+'| ''%'''' '';'||unistr('\000a')||
 '  END IF;'||unistr('\000a')||
 '  --'||unistr('\000a')||
-'  IF P_ITEM.ATTRIBUTE_07 IS NOT N'||
-'ULL THEN'||unistr('\000a')||
+'  IF P_ITEM.ATTRIBUTE_07 IS NOT NULL THEN'||unistr('\000a')||
 '    L_SQL := L_SQL || ''AND ROWNUM <= '' || P_ITEM.ATTRIBUTE_07 || '' '' ;'||unistr('\000a')||
 '  END IF;'||unistr('\000a')||
 '  --'||unistr('\000a')||
