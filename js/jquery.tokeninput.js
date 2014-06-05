@@ -741,6 +741,7 @@
                 }
             }
         }
+        var thisObj = this;
         this.clear_item = function() {
             hidden_input = $(input);
             input_token = hidden_input.parent().find('.token-input-input-token');
@@ -829,6 +830,23 @@
             var ajaxRequest = new htmldb_Get(null, $v('pFlowId'), null, $v('pFlowStepId'));
             ajaxRequest.add($(input).attr("id"), $(input).val());
             var response = ajaxRequest.get(null, null, null);
+        }
+
+        this.set_data = function(ids) {
+            var plId = settings.pluginId;
+            var callback = function(results) {
+                for (var i = 0; i < results.row.length; i++) {
+                    thisObj.clear_item();
+                    $(input).val(ids);
+                    thisObj.save_data();
+                    thisObj.add_token_api(results.row[i].id, results.row[i].name);
+                }
+            };
+            apex.server.plugin(plId, {
+                x02: ids
+            }, {
+                success: callback
+            });
         }
     };
 
