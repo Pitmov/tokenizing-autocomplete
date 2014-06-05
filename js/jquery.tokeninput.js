@@ -835,10 +835,10 @@
         this.set_data = function(ids) {
             var plId = settings.pluginId;
             var callback = function(results) {
+                thisObj.clear_item();
+                $(input).val(ids);
+                thisObj.save_data();
                 for (var i = 0; i < results.row.length; i++) {
-                    thisObj.clear_item();
-                    $(input).val(ids);
-                    thisObj.save_data();
                     thisObj.add_token_api(results.row[i].id, results.row[i].name);
                 }
             };
