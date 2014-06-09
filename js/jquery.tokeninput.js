@@ -517,7 +517,6 @@
             ajaxRequest.add(hidden_input.attr("id"), hidden_input.val());
             var response = ajaxRequest.get(null, null, null);
             $(input).attr("value", hidden_input.val());
-            //console.log(hidden_input.val());
             token_count--;
 
             if (settings.tokenLimit != null) {
@@ -748,57 +747,18 @@
             input_box = $(input_token.children()[0]);
             input = $(input)[0];
             var del_tokens = hidden_input.parent().find('.token-input-token');
-            //	var this_token = insert_token(id, name);
-
-            //delete_token($(del_token));
             // Remove the id from the saved list
             var curr_length = del_tokens.length;
             token_count = curr_length;
             input_box.val('');
             for (var j = 0; j < curr_length; j++) {
                 var token = $(del_tokens[j]);
-                var token_data = $.data(token.get(0), "tokeninput");
-                //console.log(token_data.id);
-                // Delete the token
-                token.remove();
-                selected_token = null;
-
-                // Show the input box and give it focus again
-                //input_box.focus();
-                //console.log(hidden_input.val());
-                //console.log(token_data.id);
-                // Delete this token's id from hidden input
-                var tokens = hidden_input.val().split(",");
-                for (i = 0; i < tokens.length; i++) {
-                    if (tokens[i] == token_data.id) {
-                        tokens[i] = "";
-                    }
-                }
-                //var to_delete = tokens.indexOf(token_data.id);
-                //console.log(to_delete);
-                //tokens.splice(to_delete, 1);
-                hidden_input.val(tokens.join(","));
-
-                $(input).attr("value", hidden_input.val());
-                //console.log(hidden_input.val());
-                token_count--;
-
-                if (settings.tokenLimit != null) {
-                    input_box
-                        .show()
-                        .val("")
-                        .focus();
-                }
-
-                $(hidden_input).trigger('tokendelete', {
-                    add: create_token,
-                    data: token_data
-                });
+                delete_token(token);
             }
+            $(input).attr('value', '');
+            $(input).val('');
             hidden_input.val('');
-            /*var ajaxRequest = new htmldb_Get(null, $v('pFlowId'), null, $v('pFlowStepId'));
-			ajaxRequest.add(hidden_input.attr("id"), hidden_input.val());
-			var response = ajaxRequest.get(null, null, null);*/
+            hidden_input.attr('value', '');
         }
 
         this.add_token_api = function(id, name) {
@@ -815,6 +775,7 @@
             else
                 var id_string = id;
             hidden_input.val(hidden_input.val() + id_string);
+            $(input).attr('value', hidden_input.val());
 
             token_count++;
 
@@ -836,8 +797,6 @@
             var plId = settings.pluginId;
             var callback = function(results) {
                 thisObj.clear_item();
-                $(input).val(ids);
-                thisObj.save_data();
                 for (var i = 0; i < results.row.length; i++) {
                     thisObj.add_token_api(results.row[i].id, results.row[i].name);
                 }
